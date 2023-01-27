@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Calculator</string>
+    <string name="calcResult">0</string>
+    <string name="calcZero">0</string>
+    <string name="calcOne">1</string>
+    <string name="calcTwo">2</string>
+    <string name="calcThree">3</string>
+    <string name="calcFour">4</string>
+    <string name="calcFive">5</string>
+    <string name="calcSix">6</string>
+    <string name="calcSeven">7</string>
+    <string name="calcEight">8</string>
+    <string name="calcNine">9</string>
+    <string name="calcDivide">/</string>
+    <string name="calcMultiply">*</string>
+    <string name="calcCalculate">=</string>
+    <string name="calcAdd">+</string>
+    <string name="calcSubtract">-</string>
+    <string name="calcDecimal">.</string>
+    <string name="calcNegPos">+/-</string>
+    <string name="calcClear">C</string>
+    <string name="calcRemove">DEL</string>
+</resources>
