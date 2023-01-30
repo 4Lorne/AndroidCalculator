@@ -7,10 +7,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+public class MainActivity extends AppCompatActivity {
 
-public class MainActivity extends AppCompatActivity{
-
+    MathLogic mathLogic = new MathLogic();
     Button calcOne, calcTwo, calcThree, calcFour, calcFive, calcSix, calcSeven, calcEight, calcNine, calcZero;
     Button calcDivide, calcMultiply, calcAdd, calcSubtract, calcDecimal, calcCalculate;
     Button calcNegPos, calcClear, calcRemove;
@@ -70,49 +69,108 @@ public class MainActivity extends AppCompatActivity{
         @Override
         public void onClick(View v) {
             //stringNum will check for 0 in the first position and also append the string
-            switch (v.getId()){
+            switch (v.getId()) {
                 case R.id.calcOne:
-                    stringNum(calcResult,1);
+                    stringNum(calcResult, 1);
                     break;
                 case R.id.calcTwo:
-                    stringNum(calcResult,2);
+                    stringNum(calcResult, 2);
                     break;
                 case R.id.calcThree:
-                    stringNum(calcResult,3);
+                    stringNum(calcResult, 3);
                     break;
                 case R.id.calcFour:
-                    stringNum(calcResult,4);
+                    stringNum(calcResult, 4);
                     break;
                 case R.id.calcFive:
-                    stringNum(calcResult,5);
+                    stringNum(calcResult, 5);
                     break;
                 case R.id.calcSix:
-                    stringNum(calcResult,6);
+                    stringNum(calcResult, 6);
                     break;
                 case R.id.calcSeven:
-                    stringNum(calcResult,7);
+                    stringNum(calcResult, 7);
                     break;
                 case R.id.calcEight:
-                    stringNum(calcResult,8);
+                    stringNum(calcResult, 8);
                     break;
                 case R.id.calcNine:
-                    stringNum(calcResult,9);
+                    stringNum(calcResult, 9);
                     break;
                 case R.id.calcZero:
-                    stringNum(calcResult,0);
+                    stringNum(calcResult, 0);
+                    break;
+                case R.id.calcAdd:
+                    mathSymbols(calcResult, "+");
+                    break;
+                case R.id.calcSubtract:
+                    mathSymbols(calcResult, "-");
+                    break;
+                case R.id.calcMultiply:
+                    mathSymbols(calcResult, "*");
+                    break;
+                case R.id.calcDivide:
+                    mathSymbols(calcResult, "/");
+                    break;
+                case R.id.calcNegPos:
+                    negPos(calcResult);
+                    break;
+                case R.id.calcDecimal:
+                    mathSymbols(calcResult, ".");
+                    break;
+                case R.id.calcRemove:
+                    delete(calcResult);
+                    break;
+                case R.id.calcClear:
+                    clear(calcResult);
                     break;
             }
         }
     };
 
-    public void stringNum(TextView button, int num){
+    public void stringNum(TextView button, int num) {
         zeroCheck();
         String s = String.valueOf(num);
         button.setText(button.getText() + s);
     }
-    public void zeroCheck(){
-        if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0'){
-                calcResult.setText("");
+
+    //TODO: Fix to allow multiple of the symbol as long as they arent next to each other
+    //TODO: Check for symbols of different kinds next to each other
+    //TODO: Add function to multiply by -1
+    public void mathSymbols(TextView button, String symbol) {
+        zeroCheck();
+        if (button.getText().toString().contains(symbol)) {
+        } else {
+            button.setText(button.getText() + symbol);
+        }
+    }
+
+    //TODO: Check there is at least one character to delete
+    public void delete(TextView calcResult) {
+        if (calcResult.length() > 0) {
+            calcResult.setText(calcResult.getText().subSequence(0, calcResult.length() - 1));
+        }
+        if (calcResult.length() == 0) {
+            calcResult.setText("0");
+        }
+    }
+
+    public void clear(TextView calcResult) {
+        calcResult.setText("0");
+    }
+
+    //TODO: Decimal numbers crash program...Mod 0 check for whole numbers?
+    public void negPos(TextView calcResult){
+        String temp = calcResult.getText().toString();
+        int result = Integer.parseInt(temp);
+        result = result * -1;
+        temp = String.valueOf(result);
+        calcResult.setText(temp);
+    }
+
+    public void zeroCheck() {
+        if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0') {
+            calcResult.setText("");
         }
     }
 }
