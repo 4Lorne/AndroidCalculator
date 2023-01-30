@@ -5,10 +5,10 @@ public class MathLogic {
     private double numRight;
 
     public MathLogic(){
-
     }
 
-    void add(double numLeft,double numRight){
-        numLeft = numLeft + numRight;
+    int subtract(int numLeft,int numRight){
+        numLeft = numLeft - numRight;
+        return numLeft;
     }
 }

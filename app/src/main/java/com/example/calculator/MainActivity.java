@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+
 public class MainActivity extends AppCompatActivity {
 
     MathLogic mathLogic = new MathLogic();
@@ -14,7 +15,6 @@ public class MainActivity extends AppCompatActivity {
     Button calcDivide, calcMultiply, calcAdd, calcSubtract, calcDecimal, calcCalculate;
     Button calcNegPos, calcClear, calcRemove;
     TextView calcResult, calcHistory;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -124,6 +124,8 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.calcClear:
                     clear(calcResult);
                     break;
+                case R.id.calcCalculate:
+                    numArray(calcResult, "-");
             }
         }
     };
@@ -134,12 +136,28 @@ public class MainActivity extends AppCompatActivity {
         button.setText(button.getText() + s);
     }
 
+    //Pass to MathLogic
+    //Break string at symbol, delete everything before hand
+    public void numArray(TextView calcResult, String operator) {
+        String[] splitNum = calcResult.getText().toString().split(operator);
+        String numOne = splitNum[0];
+        String numTwo = splitNum[1];
+
+        int numOneParsed = Integer.parseInt(numOne);
+        int numTwoParsed = Integer.parseInt(numTwo);
+
+        int result = mathLogic.subtract(numOneParsed,numTwoParsed);
+
+        calcResult.setText(String.valueOf(result));
+    }
+
     //TODO: Fix to allow multiple of the symbol as long as they arent next to each other
     //TODO: Check for symbols of different kinds next to each other
     //TODO: Add function to multiply by -1
     public void mathSymbols(TextView button, String symbol) {
         zeroCheck();
         if (button.getText().toString().contains(symbol)) {
+
         } else {
             button.setText(button.getText() + symbol);
         }
@@ -159,13 +177,19 @@ public class MainActivity extends AppCompatActivity {
         calcResult.setText("0");
     }
 
-    //TODO: Decimal numbers crash program...Mod 0 check for whole numbers?
-    public void negPos(TextView calcResult){
+    public void negPos(TextView calcResult) {
         String temp = calcResult.getText().toString();
-        int result = Integer.parseInt(temp);
-        result = result * -1;
-        temp = String.valueOf(result);
-        calcResult.setText(temp);
+        if (temp.contains(".")) {
+            double result = Double.parseDouble(temp);
+            result = result * -1;
+            temp = String.valueOf(result);
+            calcResult.setText(temp);
+        } else {
+            int result = Integer.parseInt(temp);
+            result = result * -1;
+            temp = String.valueOf(result);
+            calcResult.setText(temp);
+        }
     }
 
     public void zeroCheck() {
