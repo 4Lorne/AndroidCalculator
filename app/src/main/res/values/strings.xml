@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Calculator</string>
     <string name="calcResult">0</string>
+    <string name="calcHistory"></string>
     <string name="calcZero">0</string>
     <string name="calcOne">1</string>
     <string name="calcTwo">2</string>

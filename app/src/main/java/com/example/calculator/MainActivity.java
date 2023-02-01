@@ -7,14 +7,27 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 
+//TODO: Check there is at least one character to delete
+//TODO: If there is only 1 character and it is an operator, set to 0
+//TODO: If there is no right character, crashes
+//TODO: Fix to allow multiple of the symbol as long as they arent next to each other
+//TODO: Check for symbols of different kinds next to each other
+//TODO: Add function to multiply by -1
+//TODO: If removing text and just a - symbol is remaining set to 0
 public class MainActivity extends AppCompatActivity {
 
     MathLogic mathLogic = new MathLogic();
+    double leftSide;
+    double rightSide;
+    DecimalFormat df = new DecimalFormat("0");
     Button calcOne, calcTwo, calcThree, calcFour, calcFive, calcSix, calcSeven, calcEight, calcNine, calcZero;
     Button calcDivide, calcMultiply, calcAdd, calcSubtract, calcDecimal, calcCalculate;
     Button calcNegPos, calcClear, calcRemove;
     TextView calcResult, calcHistory;
+
+    String operator = "z";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,69 +114,98 @@ public class MainActivity extends AppCompatActivity {
                     stringNum(calcResult, 0);
                     break;
                 case R.id.calcAdd:
-                    mathSymbols(calcResult, "+");
+                    mathSymbols(calcResult, calcHistory, "+");
                     break;
                 case R.id.calcSubtract:
-                    mathSymbols(calcResult, "-");
+                    mathSymbols(calcResult, calcHistory, "-");
                     break;
                 case R.id.calcMultiply:
-                    mathSymbols(calcResult, "*");
+                    mathSymbols(calcResult, calcHistory, "*");
                     break;
                 case R.id.calcDivide:
-                    mathSymbols(calcResult, "/");
+                    mathSymbols(calcResult, calcHistory, "/");
                     break;
                 case R.id.calcNegPos:
                     negPos(calcResult);
                     break;
                 case R.id.calcDecimal:
-                    mathSymbols(calcResult, ".");
+                    mathSymbols(calcResult, calcHistory, ".");
                     break;
                 case R.id.calcRemove:
                     delete(calcResult);
                     break;
                 case R.id.calcClear:
-                    clear(calcResult);
+                    clear(calcResult, calcHistory);
                     break;
                 case R.id.calcCalculate:
-                    numArray(calcResult, "-");
+                    saveHistory(calcResult, calcHistory);
+                    finishOperation(leftSide, rightSide, operator, calcHistory);
+                    break;
             }
         }
     };
 
-    public void stringNum(TextView button, int num) {
+    //Sets the text every time a button is pressed
+    public void stringNum(TextView calcResult, double num) {
         zeroCheck();
-        String s = String.valueOf(num);
-        button.setText(button.getText() + s);
+        String s = df.format(num);
+        calcResult.setText(calcResult.getText().toString() + s);
     }
 
-    //Pass to MathLogic
-    //Break string at symbol, delete everything before hand
-    public void numArray(TextView calcResult, String operator) {
-        String[] splitNum = calcResult.getText().toString().split(operator);
-        String numOne = splitNum[0];
-        String numTwo = splitNum[1];
-
-        int numOneParsed = Integer.parseInt(numOne);
-        int numTwoParsed = Integer.parseInt(numTwo);
-
-        int result = mathLogic.subtract(numOneParsed,numTwoParsed);
-
-        calcResult.setText(String.valueOf(result));
-    }
-
-    //TODO: Fix to allow multiple of the symbol as long as they arent next to each other
-    //TODO: Check for symbols of different kinds next to each other
-    //TODO: Add function to multiply by -1
-    public void mathSymbols(TextView button, String symbol) {
-        zeroCheck();
-        if (button.getText().toString().contains(symbol)) {
-
+    //Pass to MathLogic, sets the result as the text.
+    public void finishOperation(double leftSide, double rightSide, String operator, TextView calcHistory) {
+        double result = mathLogic.operation(leftSide, rightSide, operator);
+        if (leftSide == 0 || rightSide == 0) {
+            calcResult.setText("NaN");
+            return;
+        }
+        //Checks if there is going to be a decimal place
+        if (leftSide % rightSide != 0) {
+            DecimalFormat dfTwo = new DecimalFormat("0.00");
+            String s = dfTwo.format(result);
+            calcResult.setText(s);
+            calcHistory.setText(s);
         } else {
-            button.setText(button.getText() + symbol);
+            String s = df.format(result);
+            calcResult.setText(s);
+            calcHistory.setText(s);
         }
     }
 
-    //TODO: Check there is at least one character to delete
+    //Sets operator equal to the most recent symbol and sets the left side + resets the text
+    public void mathSymbols(TextView calcResult, TextView calcHistory, String symbol) {
+        operator = symbol;
+        calcHistory.setText(calcHistory.getText().toString() + "" + calcResult.getText().toString() + "" + symbol);
+        leftSide = Double.parseDouble(calcResult.getText().toString());
+        calcResult.setText("0");
+    }
+
+
+    //Multiples by 1 to change from negative to positive
+    public void negPos(TextView calcResult) {
+        double result = Double.parseDouble(calcResult.getText().toString());
+        result = result * -1;
+        String s = df.format(result);
+        calcResult.setText(s);
+
+    }
+
+    //Checks if a 0 is in the 1 position and the length is only 1. Cannot have two 0's next to each other in the 1s position
+    public void zeroCheck() {
+        if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0') {
+            calcResult.setText("");
+        }
+    }
+
+    //Erases calcResult and calcHistory when C is pressed
+    public void clear(TextView calcResult, TextView calcHistory) {
+        calcResult.setText("0");
+        calcHistory.setText("");
+        leftSide = 0;
+        rightSide = 0;
+    }
+
+    //Deletes just one character
     public void delete(TextView calcResult) {
         if (calcResult.length() > 0) {
             calcResult.setText(calcResult.getText().subSequence(0, calcResult.length() - 1));
@@ -171,30 +213,19 @@ public class MainActivity extends AppCompatActivity {
         if (calcResult.length() == 0) {
             calcResult.setText("0");
         }
-    }
-
-    public void clear(TextView calcResult) {
-        calcResult.setText("0");
-    }
-
-    public void negPos(TextView calcResult) {
-        String temp = calcResult.getText().toString();
-        if (temp.contains(".")) {
-            double result = Double.parseDouble(temp);
-            result = result * -1;
-            temp = String.valueOf(result);
-            calcResult.setText(temp);
-        } else {
-            int result = Integer.parseInt(temp);
-            result = result * -1;
-            temp = String.valueOf(result);
-            calcResult.setText(temp);
+        if (calcResult.getText().toString().charAt(0) == 'N'){
+            calcResult.setText("0");
+        }
+        if (calcResult.getText().toString().charAt(0) == '-'){
+            calcResult.setText("0");
         }
     }
 
-    public void zeroCheck() {
-        if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0') {
-            calcResult.setText("");
-        }
+    //Saves the history to a small text field above
+    public void saveHistory(TextView calcResult, TextView calcHistory) {
+        calcHistory.setText(calcHistory.getText() + " " + calcResult.getText());
+        rightSide = Double.parseDouble(calcResult.getText().toString());
+        System.out.println("Left side: " + leftSide);
+        System.out.println("Right side: " + rightSide);
     }
 }
