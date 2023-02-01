@@ -16,6 +16,8 @@ import java.text.DecimalFormat;
 //TODO: Check for symbols of different kinds next to each other
 //TODO: Add function to multiply by -1
 //TODO: If removing text and just a - symbol is remaining set to 0
+//TODO: Add app icon
+//TODO: Check if right side is null
 public class MainActivity extends AppCompatActivity {
 
     MathLogic mathLogic = new MathLogic();
@@ -129,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
                     negPos(calcResult);
                     break;
                 case R.id.calcDecimal:
-                    mathSymbols(calcResult, calcHistory, ".");
+                    setDecimal(calcResult, '.');
                     break;
                 case R.id.calcRemove:
                     delete(calcResult);
@@ -145,6 +147,14 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+//TODO: Check for multiple decimals
+    public void setDecimal(TextView calcResult, char decimal){
+        zeroCheck();
+        if (calcResult.getText().toString().contains(".")){
+        } else {
+            calcResult.setText(calcResult.getText().toString() + decimal);
+        }
+    }
     //Sets the text every time a button is pressed
     public void stringNum(TextView calcResult, double num) {
         zeroCheck();
@@ -159,8 +169,15 @@ public class MainActivity extends AppCompatActivity {
             calcResult.setText("NaN");
             return;
         }
+        boolean hasDecimal = false;
+        String ls = String.valueOf(leftSide);
+        String rs = String.valueOf(rightSide);
+        if (ls.contains(".") || rs.contains(".")){
+            hasDecimal = true;
+        }
+        //TODO: Check if one of the two contains a decimal already
         //Checks if there is going to be a decimal place
-        if (leftSide % rightSide != 0) {
+        if (leftSide % rightSide != 0 && operator.equals("/") || hasDecimal) {
             DecimalFormat dfTwo = new DecimalFormat("0.00");
             String s = dfTwo.format(result);
             calcResult.setText(s);
@@ -171,7 +188,8 @@ public class MainActivity extends AppCompatActivity {
             calcHistory.setText(s);
         }
     }
-
+    //TODO: If multiple operators are pressed it breaks
+    //TODO: If number operator equals gives NaN
     //Sets operator equal to the most recent symbol and sets the left side + resets the text
     public void mathSymbols(TextView calcResult, TextView calcHistory, String symbol) {
         operator = symbol;
