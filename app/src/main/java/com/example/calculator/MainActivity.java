@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.DecimalFormat;
 
@@ -21,8 +22,8 @@ import java.text.DecimalFormat;
 public class MainActivity extends AppCompatActivity {
 
     MathLogic mathLogic = new MathLogic();
-    double leftSide;
-    double rightSide;
+    Double leftSide = null;
+    Double rightSide = null;
     DecimalFormat df = new DecimalFormat("0");
     Button calcOne, calcTwo, calcThree, calcFour, calcFive, calcSix, calcSeven, calcEight, calcNine, calcZero;
     Button calcDivide, calcMultiply, calcAdd, calcSubtract, calcDecimal, calcCalculate;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
     TextView calcResult, calcHistory;
 
     String operator = "z";
+    int nan = R.string.nan;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,34 +88,34 @@ public class MainActivity extends AppCompatActivity {
             //stringNum will check for 0 in the first position and also append the string
             switch (v.getId()) {
                 case R.id.calcOne:
-                    stringNum(calcResult, 1);
+                    stringNum(calcResult, 1, calcHistory);
                     break;
                 case R.id.calcTwo:
-                    stringNum(calcResult, 2);
+                    stringNum(calcResult, 2, calcHistory);
                     break;
                 case R.id.calcThree:
-                    stringNum(calcResult, 3);
+                    stringNum(calcResult, 3, calcHistory);
                     break;
                 case R.id.calcFour:
-                    stringNum(calcResult, 4);
+                    stringNum(calcResult, 4, calcHistory);
                     break;
                 case R.id.calcFive:
-                    stringNum(calcResult, 5);
+                    stringNum(calcResult, 5, calcHistory);
                     break;
                 case R.id.calcSix:
-                    stringNum(calcResult, 6);
+                    stringNum(calcResult, 6, calcHistory);
                     break;
                 case R.id.calcSeven:
-                    stringNum(calcResult, 7);
+                    stringNum(calcResult, 7, calcHistory);
                     break;
                 case R.id.calcEight:
-                    stringNum(calcResult, 8);
+                    stringNum(calcResult, 8, calcHistory);
                     break;
                 case R.id.calcNine:
-                    stringNum(calcResult, 9);
+                    stringNum(calcResult, 9, calcHistory);
                     break;
                 case R.id.calcZero:
-                    stringNum(calcResult, 0);
+                    stringNum(calcResult, 0, calcHistory);
                     break;
                 case R.id.calcAdd:
                     mathSymbols(calcResult, calcHistory, "+");
@@ -134,84 +136,121 @@ public class MainActivity extends AppCompatActivity {
                     setDecimal(calcResult, '.');
                     break;
                 case R.id.calcRemove:
-                    delete(calcResult);
+                    delete(calcResult, calcHistory);
                     break;
                 case R.id.calcClear:
                     clear(calcResult, calcHistory);
                     break;
                 case R.id.calcCalculate:
-                    saveHistory(calcResult, calcHistory);
-                    finishOperation(leftSide, rightSide, operator, calcHistory);
+                    finishOperation(leftSide, operator, calcResult, calcHistory);
                     break;
             }
         }
     };
 
-//TODO: Check for multiple decimals
-    public void setDecimal(TextView calcResult, char decimal){
+    public void setDecimal(TextView calcResult, char decimal) {
         zeroCheck();
-        if (calcResult.getText().toString().contains(".")){
+        if (calcResult.getText().toString().contains(".")) {
         } else {
             calcResult.setText(calcResult.getText().toString() + decimal);
         }
     }
+
     //Sets the text every time a button is pressed
-    public void stringNum(TextView calcResult, double num) {
+    public void stringNum(TextView calcResult, double num, TextView calcHistory) {
         zeroCheck();
+        if (calcResult.getText().toString().length() >= 8){
+            Toast.makeText(getApplicationContext(),"Numbers are limited to 8 digits.",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (calcResult.getText().toString().contains("NaN")) {
+            calcHistory.setText("");
+            calcResult.setText("");
+        }
         String s = df.format(num);
         calcResult.setText(calcResult.getText().toString() + s);
+        calcHistory.setText(calcHistory.getText().toString() + s);
     }
 
     //Pass to MathLogic, sets the result as the text.
-    public void finishOperation(double leftSide, double rightSide, String operator, TextView calcHistory) {
-        double result = mathLogic.operation(leftSide, rightSide, operator);
-        if (leftSide == 0 || rightSide == 0) {
-            calcResult.setText("NaN");
+    public void finishOperation(Double leftSide, String operator, TextView calcResult, TextView calcHistory) {
+        if (calcResult.getText().toString().charAt(0) == '.' && calcResult.length() == 1) {
             return;
         }
-        boolean hasDecimal = false;
-        String ls = String.valueOf(leftSide);
-        String rs = String.valueOf(rightSide);
-        if (ls.contains(".") || rs.contains(".")){
-            hasDecimal = true;
+
+        //If equals is pressed before any other numbers
+        if (leftSide == null) {
+            calcResult.setText("0");
+            return;
         }
-        //TODO: Check if one of the two contains a decimal already
+
+        double rightSide = Double.parseDouble(calcResult.getText().toString());
+
+
+        //If right side has no value when equals is pressed
+        if (rightSide == 0.0) {
+            calcResult.setText(nan);
+            return;
+        }
+
+        //Checks for division by 0
+        if (leftSide == 0 && operator.equals("/")) {
+            calcResult.setText(nan);
+            return;
+        }
+
+        double result = mathLogic.operation(leftSide, rightSide, operator);
+
+        if (result > 99999999){
+            Toast.makeText(getApplicationContext(),"Numbers are limited to 8 digits.",Toast.LENGTH_SHORT).show();
+            calcResult.setText("99999999");
+            return;
+        }
         //Checks if there is going to be a decimal place
-        if (leftSide % rightSide != 0 && operator.equals("/") || hasDecimal) {
+        if (leftSide % rightSide != 0 && operator.equals("/")) {
             DecimalFormat dfTwo = new DecimalFormat("0.00");
             String s = dfTwo.format(result);
             calcResult.setText(s);
             calcHistory.setText(s);
+
         } else {
             String s = df.format(result);
             calcResult.setText(s);
             calcHistory.setText(s);
         }
+
     }
-    //TODO: If multiple operators are pressed it breaks
-    //TODO: If number operator equals gives NaN
+
     //Sets operator equal to the most recent symbol and sets the left side + resets the text
     public void mathSymbols(TextView calcResult, TextView calcHistory, String symbol) {
+        if (calcResult.getText().toString().charAt(0) == '.' && calcResult.length() == 1) {
+            return;
+        }
+
         operator = symbol;
-        calcHistory.setText(calcHistory.getText().toString() + "" + calcResult.getText().toString() + "" + symbol);
         leftSide = Double.parseDouble(calcResult.getText().toString());
+        calcHistory.setText(calcResult.getText().toString() + symbol);
         calcResult.setText("0");
     }
 
 
     //Multiples by 1 to change from negative to positive
     public void negPos(TextView calcResult) {
+        //Checks if 0 is in the first position
+        if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0') {
+            return;
+        }
         double result = Double.parseDouble(calcResult.getText().toString());
         result = result * -1;
         String s = df.format(result);
         calcResult.setText(s);
-
     }
 
     //Checks if a 0 is in the 1 position and the length is only 1. Cannot have two 0's next to each other in the 1s position
     public void zeroCheck() {
         if (calcResult.getText().length() == 1 && calcResult.getText().toString().charAt(0) == '0') {
             calcResult.setText("");
+            calcHistory.setText("");
         }
     }
 
@@ -219,31 +258,26 @@ public class MainActivity extends AppCompatActivity {
     public void clear(TextView calcResult, TextView calcHistory) {
         calcResult.setText("0");
         calcHistory.setText("");
-        leftSide = 0;
-        rightSide = 0;
+        leftSide = null;
+        rightSide = null;
     }
 
     //Deletes just one character
-    public void delete(TextView calcResult) {
+    public void delete(TextView calcResult, TextView calcHistory) {
         if (calcResult.length() > 0) {
             calcResult.setText(calcResult.getText().subSequence(0, calcResult.length() - 1));
         }
         if (calcResult.length() == 0) {
             calcResult.setText("0");
         }
-        if (calcResult.getText().toString().charAt(0) == 'N'){
+        if (calcResult.getText().toString().charAt(0) == 'N') {
             calcResult.setText("0");
         }
-        if (calcResult.getText().toString().charAt(0) == '-'){
+        if (calcResult.getText().toString().charAt(0) == '-') {
             calcResult.setText("0");
         }
-    }
-
-    //Saves the history to a small text field above
-    public void saveHistory(TextView calcResult, TextView calcHistory) {
-        calcHistory.setText(calcHistory.getText() + " " + calcResult.getText());
-        rightSide = Double.parseDouble(calcResult.getText().toString());
-        System.out.println("Left side: " + leftSide);
-        System.out.println("Right side: " + rightSide);
+        if (calcHistory.length() > 0) {
+            calcHistory.setText(calcHistory.getText().subSequence(0, calcHistory.length() - 1));
+        }
     }
 }

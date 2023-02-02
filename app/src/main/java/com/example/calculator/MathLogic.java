@@ -8,16 +8,6 @@ public class MathLogic {
     public MathLogic(){
     }
 
-    int subtract(int numLeft,int numRight){
-        numLeft = numLeft - numRight;
-        return numLeft;
-    }
-
-    int add(int numLeft,int numRight){
-        numLeft = numLeft + numRight;
-        return numLeft;
-    }
-
     double operation(double numLeft, double numRight, String operator){
         double result = 0;
         switch(operator){
